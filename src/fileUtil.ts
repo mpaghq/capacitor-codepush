@@ -67,6 +67,10 @@ export class FileUtil {
             ignoreList.push("__MACOSX");
         }
 
+        if (await FileUtil.directoryExists(destinationDir.directory, destinationDir.path)) {
+            await Filesystem.rmdir({ directory: destinationDir.directory, path: destinationDir.path, recursive: true });
+        }
+
         return FileUtil.copy(sourceDir, destinationDir);
     }
 
