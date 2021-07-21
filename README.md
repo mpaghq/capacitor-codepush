@@ -31,7 +31,7 @@ In order to ensure that your end users always have a functioning version of your
 
 Tested with these environment
 ```
-"@capacitor-community/http": "^1.0.0",
+"@capacitor-community/http": "^1.1.0",
 "@capacitor/core": "^3.0.0",
 "@capacitor/device": "^1.0.0",
 "@capacitor/dialog": "^1.0.0",
@@ -43,7 +43,7 @@ Tested with these environment
 Once you've followed the general-purpose ["getting started"](https://docs.microsoft.com/en-us/appcenter/distribution/codepush/) instructions for setting up your CodePush account, you can start CodePush-ifying your Capacitor app by running the following command from within your app's root directory:
 
 ```shell
-npm i @capacitor-community/http@next @capacitor/device @capacitor/dialog @capacitor/filesystem -D
+npm i @capacitor-community/http @capacitor/device @capacitor/dialog @capacitor/filesystem -D
 npm i https://github.com/mapiacompany/capacitor-codepush -D
 npx cap sync
 ```
