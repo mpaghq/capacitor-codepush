@@ -496,7 +496,7 @@ class CodePush implements CodePushCapacitorPlugin {
            * if it's the case, get user input */
           const lShouldUpdate: boolean = await manageUserInput(remotePackage);
 
-          if(lShouldUpdate) {
+          if (lShouldUpdate) {
             /* Download */
             const localPackage = await downloadUpdate(remotePackage);
             /* Install */
