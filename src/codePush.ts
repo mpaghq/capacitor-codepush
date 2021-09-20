@@ -221,9 +221,9 @@ class CodePush implements CodePushCapacitorPlugin {
               appUpToDate();
             } else {
               /* There is an update available for the current version. */
-              var remotePackage: RemotePackage = <RemotePackage>remotePackageOrUpdateNotification;
+              const remotePackage: RemotePackage = <RemotePackage>remotePackageOrUpdateNotification;
               const installFailed = await NativeAppInfo.isFailedUpdate(remotePackage.packageHash);
-              var result: RemotePackage = new RemotePackage();
+              const result: RemotePackage = new RemotePackage();
               result.appVersion = remotePackage.appVersion;
               result.deploymentKey = deploymentKey; // server does not send back the deployment key
               result.description = remotePackage.description;
