@@ -318,7 +318,7 @@ class CodePush implements CodePushCapacitorPlugin {
     return await new Promise(
       (resolve, reject) => {
         /* Check if a sync is already in progress */
-        if (CodePush.SyncInProgress) {
+        if (CodePush.SyncInProgress === true) {
           /* A sync is already in progress */
           CodePushUtil.logMessage("Sync already in progress.");
           resolve(SyncStatus.IN_PROGRESS);
