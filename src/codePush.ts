@@ -245,16 +245,16 @@ class CodePush implements CodePushCapacitorPlugin {
       const queryUpdate = async () => {
         try {
           const acquisitionManager = await Sdk.getAcquisitionManager(deploymentKey);
-            const localPackage = await LocalPackage.getCurrentOrDefaultPackage();
-            try {
-              const currentBinaryVersion = await NativeAppInfo.getApplicationVersion();
-              localPackage.appVersion = currentBinaryVersion;
-            } catch (e) {
-              /* Nothing to do */
-              /* TODO : Why ? */
-            }
-            CodePushUtil.logMessage("Checking for update.");
-            acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
+          const localPackage = await LocalPackage.getCurrentOrDefaultPackage();
+          try {
+            const currentBinaryVersion = await NativeAppInfo.getApplicationVersion();
+            localPackage.appVersion = currentBinaryVersion;
+          } catch (e) {
+            /* Nothing to do */
+            /* TODO : Why ? */
+          }
+          CodePushUtil.logMessage("Checking for update.");
+          acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
         } catch (e) {
           CodePushUtil.invokeErrorCallback(e, queryError);
         }
