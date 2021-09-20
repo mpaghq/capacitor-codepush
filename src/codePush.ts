@@ -287,11 +287,11 @@ class CodePush implements CodePushCapacitorPlugin {
    * The algorithm of this method is the following:
    * - Checks for an update on the CodePush server.
    * - If an update is available
-   *         - If the update is mandatory and the alertMessage is set in options, the user will be informed that the application will be updated to the latest version.
-   *           The update package will then be downloaded and applied.
-   *         - If the update is not mandatory and the confirmMessage is set in options, the user will be asked if they want to update to the latest version.
-   *           If they decline, the syncCallback will be invoked with SyncStatus.UPDATE_IGNORED.
-   *         - Otherwise, the update package will be downloaded and applied with no user interaction.
+   *   - If the update is mandatory and the alertMessage is set in options, the user will be informed that the application will be updated to the latest version.
+   *     The update package will then be downloaded and applied.
+   *   - If the update is not mandatory and the confirmMessage is set in options, the user will be asked if they want to update to the latest version.
+   *     If they decline, the syncCallback will be invoked with SyncStatus.UPDATE_IGNORED.
+   *   - Otherwise, the update package will be downloaded and applied with no user interaction.
    * - If no update is available on the server, the syncCallback will be invoked with the SyncStatus.UP_TO_DATE.
    * - If an error occurs during checking for update, downloading or installing it, the syncCallback will be invoked with the SyncStatus.ERROR.
    *
