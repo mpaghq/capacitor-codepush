@@ -319,7 +319,7 @@ class CodePush implements CodePushCapacitorPlugin {
             reject(err);
           } else {
             /* Call the user's callback */
-            syncOptions.onSyncStatusChanged && syncOptions.onSyncStatusChanged(result);
+            syncOptions?.onSyncStatusChanged && syncOptions.onSyncStatusChanged(result);
 
             /* Check if the sync operation is over */
             switch (result) {
