@@ -159,5 +159,5 @@ declare class CodePush implements CodePushCapacitorPlugin {
      */
     private getDefaultUpdateDialogOptions;
 }
-export declare const codePush: CodePush;
+export declare const codePush: CodePush | null;
 export {};

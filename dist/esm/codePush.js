@@ -7,6 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { Capacitor } from "@capacitor/core";
+import { Dialog } from "@capacitor/dialog";
 import { AcquisitionStatus } from "code-push/script/acquisition-sdk";
 import { CodePushUtil } from "./codePushUtil";
 import { InstallMode } from "./installMode";
@@ -16,7 +18,6 @@ import { CodePush as NativeCodePush } from "./nativeCodePushPlugin";
 import { RemotePackage } from "./remotePackage";
 import { Sdk } from "./sdk";
 import { SyncStatus } from "./syncStatus";
-import { Dialog } from "@capacitor/dialog";
 /**
  * This is the entry point to Cordova CodePush SDK.
  * It provides the following features to the app developer:
@@ -437,6 +438,14 @@ var ReportStatus;
     ReportStatus[ReportStatus["UPDATE_CONFIRMED"] = 1] = "UPDATE_CONFIRMED";
     ReportStatus[ReportStatus["UPDATE_ROLLED_BACK"] = 2] = "UPDATE_ROLLED_BACK";
 })(ReportStatus || (ReportStatus = {}));
-export const codePush = new CodePush();
-window.codePush = codePush;
+let codePushInstance = null;
+if (Capacitor.getPlatform() !== 'web') {
+    codePushInstance = new CodePush();
+    window.codePush = codePushInstance;
+}
+else {
+    /* Can't use CodePush without Capacitor */
+    /* The instance will be null */
+}
+export const codePush = codePushInstance;
 //# sourceMappingURL=codePush.js.map
