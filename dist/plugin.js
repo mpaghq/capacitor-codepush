@@ -1437,13 +1437,13 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                     */
                     const syncCallbackAndUpdateSyncInProgress = (err, result) => {
                         if (err) {
-                            syncOptions.onSyncError && syncOptions.onSyncError(err);
+                            (syncOptions === null || syncOptions === void 0 ? void 0 : syncOptions.onSyncError) && syncOptions.onSyncError(err);
                             CodePush$1.SyncInProgress = false;
                             reject(err);
                         }
                         else {
                             /* Call the user's callback */
-                            syncOptions.onSyncStatusChanged && syncOptions.onSyncStatusChanged(result);
+                            (syncOptions === null || syncOptions === void 0 ? void 0 : syncOptions.onSyncStatusChanged) && syncOptions.onSyncStatusChanged(result);
                             /* Check if the sync operation is over */
                             switch (result) {
                                 case SyncStatus.ERROR:
