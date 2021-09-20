@@ -404,7 +404,9 @@ class CodePush implements CodePushCapacitorPlugin {
           } else {
             CodePushUtil.logMessage("Update is installed and will be run when the app next resumes.");
           }
-
+          break;
+        case InstallMode.IMMEDIATE:
+          CodePushUtil.logMessage("Update is installed and will be run immediately.");
           break;
       }
 
