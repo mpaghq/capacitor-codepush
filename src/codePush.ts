@@ -254,7 +254,12 @@ class CodePush implements CodePushCapacitorPlugin {
 
       const queryUpdate = async () => {
         try {
+          /* Get the acquisition manager to fetch the package */
           const acquisitionManager = await Sdk.getAcquisitionManager(deploymentKey);
+
+          /* Get the local package to install
+           * if said package doesn't exist, defaults to the existing
+           * code package */
           const localPackage = await LocalPackage.getCurrentOrDefaultPackage();
           try {
             const currentBinaryVersion = await NativeAppInfo.getApplicationVersion();
@@ -262,6 +267,7 @@ class CodePush implements CodePushCapacitorPlugin {
           } catch (e) {
             /* Nothing to do */
             /* TODO : Why ? */
+            /* We bet that the appVersion hasn't changed */
           }
           CodePushUtil.logMessage("Checking for update.");
           acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
