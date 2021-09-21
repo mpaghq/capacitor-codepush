@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+import { ConfirmResult, Dialog } from "@capacitor/dialog";
 import { AcquisitionStatus, NativeUpdateNotification } from "code-push/script/acquisition-sdk";
 import { Callback, ErrorCallback, SuccessCallback } from "./callbackUtil";
 import { CodePushUtil } from "./codePushUtil";
@@ -10,7 +12,6 @@ import { RemotePackage } from "./remotePackage";
 import { Sdk } from "./sdk";
 import { SyncOptions, UpdateDialogOptions } from "./syncOptions";
 import { SyncStatus } from "./syncStatus";
-import { ConfirmResult, Dialog } from "@capacitor/dialog";
 
 interface CodePushCapacitorPlugin {
 
@@ -534,5 +535,13 @@ enum ReportStatus {
   UPDATE_ROLLED_BACK = 2
 }
 
-export const codePush = new CodePush();
-(window as any).codePush = codePush;
+let codePushInstance: CodePush | null = null;
+if(Capacitor.getPlatform() !== 'web') {
+  codePushInstance = new CodePush();
+  (window as any).codePush = codePushInstance;
+} else {
+  /* Can't use CodePush without Capacitor */
+  /* The instance will be null */
+}
+
+export const codePush: CodePush | null = codePushInstance;

@@ -1,4 +1,4 @@
-var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http, device, dialog) {
+var capacitorPlugin = (function (exports, core, dialog, acquisitionSdk, filesystem, http, device) {
     'use strict';
 
     /**
@@ -1633,8 +1633,12 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
         ReportStatus[ReportStatus["UPDATE_CONFIRMED"] = 1] = "UPDATE_CONFIRMED";
         ReportStatus[ReportStatus["UPDATE_ROLLED_BACK"] = 2] = "UPDATE_ROLLED_BACK";
     })(ReportStatus || (ReportStatus = {}));
-    const codePush = new CodePush$1();
-    window.codePush = codePush;
+    let codePushInstance = null;
+    if (core.Capacitor.getPlatform() !== 'web') {
+        codePushInstance = new CodePush$1();
+        window.codePush = codePushInstance;
+    }
+    const codePush = codePushInstance;
 
     exports.CodePush = CodePush;
     exports.codePush = codePush;
@@ -1643,5 +1647,5 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
 
     return exports;
 
-}({}, acquisitionSdk, filesystem, capacitorExports, http, device, dialog));
+}({}, capacitorExports, dialog, acquisitionSdk, filesystem, http, device));
 //# sourceMappingURL=plugin.js.map
