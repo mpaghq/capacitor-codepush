@@ -217,13 +217,23 @@ class CodePush implements CodePushCapacitorPlugin {
           if (remotePackageOrUpdateNotification) {
             if ((<NativeUpdateNotification>remotePackageOrUpdateNotification).updateAppVersion) {
               /* There is an update available for a different version. In the current version of the plugin, we treat that as no update. */
-              CodePushUtil.logMessage("An update is available, but it is targeting a newer binary version than you are currently running.");
+              let currentBinaryVersion: string | null = null;
+              try {
+                currentBinaryVersion = await NativeAppInfo.getApplicationVersion();
+              } catch(e) {
+                currentBinaryVersion = 'unknown';
+              }
+              CodePushUtil.logMessage(
+                `An update is available, but it is targeting a newer (${remotePackageOrUpdateNotification.appVersion})
+                binary than the one you are currently running (${currentBinaryVersion}).`
+              );
+
               appUpToDate();
             } else {
               /* There is an update available for the current version. */
-              var remotePackage: RemotePackage = <RemotePackage>remotePackageOrUpdateNotification;
+              const remotePackage: RemotePackage = <RemotePackage>remotePackageOrUpdateNotification;
               const installFailed = await NativeAppInfo.isFailedUpdate(remotePackage.packageHash);
-              var result: RemotePackage = new RemotePackage();
+              const result: RemotePackage = new RemotePackage();
               result.appVersion = remotePackage.appVersion;
               result.deploymentKey = deploymentKey; // server does not send back the deployment key
               result.description = remotePackage.description;
@@ -244,17 +254,23 @@ class CodePush implements CodePushCapacitorPlugin {
 
       const queryUpdate = async () => {
         try {
+          /* Get the acquisition manager to fetch the package */
           const acquisitionManager = await Sdk.getAcquisitionManager(deploymentKey);
-            const localPackage = await LocalPackage.getCurrentOrDefaultPackage();
-            try {
-              const currentBinaryVersion = await NativeAppInfo.getApplicationVersion();
-              localPackage.appVersion = currentBinaryVersion;
-            } catch (e) {
-              /* Nothing to do */
-              /* TODO : Why ? */
-            }
-            CodePushUtil.logMessage("Checking for update.");
-            acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
+
+          /* Get the local package to install
+           * if said package doesn't exist, defaults to the existing
+           * code package */
+          const localPackage = await LocalPackage.getCurrentOrDefaultPackage();
+          try {
+            const currentBinaryVersion = await NativeAppInfo.getApplicationVersion();
+            localPackage.appVersion = currentBinaryVersion;
+          } catch (e) {
+            /* Nothing to do */
+            /* TODO : Why ? */
+            /* We bet that the appVersion hasn't changed */
+          }
+          CodePushUtil.logMessage("Checking for update.");
+          acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
         } catch (e) {
           CodePushUtil.invokeErrorCallback(e, queryError);
         }
@@ -287,11 +303,11 @@ class CodePush implements CodePushCapacitorPlugin {
    * The algorithm of this method is the following:
    * - Checks for an update on the CodePush server.
    * - If an update is available
-   *         - If the update is mandatory and the alertMessage is set in options, the user will be informed that the application will be updated to the latest version.
-   *           The update package will then be downloaded and applied.
-   *         - If the update is not mandatory and the confirmMessage is set in options, the user will be asked if they want to update to the latest version.
-   *           If they decline, the syncCallback will be invoked with SyncStatus.UPDATE_IGNORED.
-   *         - Otherwise, the update package will be downloaded and applied with no user interaction.
+   *   - If the update is mandatory and the alertMessage is set in options, the user will be informed that the application will be updated to the latest version.
+   *     The update package will then be downloaded and applied.
+   *   - If the update is not mandatory and the confirmMessage is set in options, the user will be asked if they want to update to the latest version.
+   *     If they decline, the syncCallback will be invoked with SyncStatus.UPDATE_IGNORED.
+   *   - Otherwise, the update package will be downloaded and applied with no user interaction.
    * - If no update is available on the server, the syncCallback will be invoked with the SyncStatus.UP_TO_DATE.
    * - If an error occurs during checking for update, downloading or installing it, the syncCallback will be invoked with the SyncStatus.ERROR.
    *
@@ -302,7 +318,7 @@ class CodePush implements CodePushCapacitorPlugin {
     return await new Promise(
       (resolve, reject) => {
         /* Check if a sync is already in progress */
-        if (CodePush.SyncInProgress) {
+        if (CodePush.SyncInProgress === true) {
           /* A sync is already in progress */
           CodePushUtil.logMessage("Sync already in progress.");
           resolve(SyncStatus.IN_PROGRESS);
@@ -404,7 +420,9 @@ class CodePush implements CodePushCapacitorPlugin {
           } else {
             CodePushUtil.logMessage("Update is installed and will be run when the app next resumes.");
           }
-
+          break;
+        case InstallMode.IMMEDIATE:
+          CodePushUtil.logMessage("Update is installed and will be run immediately.");
           break;
       }
 
