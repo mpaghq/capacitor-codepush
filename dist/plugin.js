@@ -1503,6 +1503,26 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                 CodePushUtil.logError("An error occurred during sync.", error);
                 syncCallback && syncCallback(error, SyncStatus.ERROR);
             };
+            const installUpdate = (localPackage) => __awaiter$5(this, void 0, void 0, function* () {
+                try {
+                    syncCallback && syncCallback(null, SyncStatus.INSTALLING_UPDATE);
+                    return yield localPackage.install(syncOptions);
+                }
+                catch (error) {
+                    CodePushUtil.logError("Failed to install the local package", error);
+                    onError(error);
+                }
+            });
+            const downloadUpdate = (remotePackage) => __awaiter$5(this, void 0, void 0, function* () {
+                try {
+                    syncCallback && syncCallback(null, SyncStatus.DOWNLOADING_PACKAGE);
+                    return yield remotePackage.download(downloadProgress);
+                }
+                catch (error) {
+                    CodePushUtil.logError("Failed to download the remote package", error);
+                    onError(error);
+                }
+            });
             const onInstallSuccess = (appliedWhen) => {
                 switch (appliedWhen) {
                     case exports.InstallMode.ON_NEXT_RESTART:
@@ -1519,14 +1539,52 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                 }
                 syncCallback && syncCallback(null, SyncStatus.UPDATE_INSTALLED);
             };
-            const onDownloadSuccess = (localPackage) => {
-                syncCallback && syncCallback(null, SyncStatus.INSTALLING_UPDATE);
-                localPackage.install(syncOptions).then(onInstallSuccess, onError);
-            };
-            const downloadAndInstallUpdate = (remotePackage) => {
-                syncCallback && syncCallback(null, SyncStatus.DOWNLOADING_PACKAGE);
-                remotePackage.download(downloadProgress).then(onDownloadSuccess, onError);
-            };
+            const manageUserInput = (remotePackage) => __awaiter$5(this, void 0, void 0, function* () {
+                if (syncOptions.updateDialog) {
+                    CodePushUtil.logMessage("Awaiting user action.");
+                    syncCallback && syncCallback(null, SyncStatus.AWAITING_USER_ACTION);
+                    const dlgOpts = syncOptions.updateDialog;
+                    if (remotePackage.isMandatory) {
+                        /* Alert user */
+                        const message = dlgOpts.appendReleaseDescription ?
+                            dlgOpts.mandatoryUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description :
+                            dlgOpts.mandatoryUpdateMessage;
+                        yield dialog.Dialog.alert({
+                            message,
+                            title: dlgOpts.updateTitle,
+                            buttonTitle: dlgOpts.mandatoryContinueButtonLabel
+                        });
+                        CodePushUtil.logMessage("User dismissed the mandatory update dialog.");
+                        return true; /* Should update */
+                    }
+                    else {
+                        /* Confirm update with user */
+                        const message = dlgOpts.appendReleaseDescription ?
+                            dlgOpts.optionalUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description
+                            : dlgOpts.optionalUpdateMessage;
+                        const confirmResult = yield dialog.Dialog.confirm({
+                            message,
+                            title: dlgOpts.updateTitle,
+                            okButtonTitle: dlgOpts.optionalInstallButtonLabel,
+                            cancelButtonTitle: dlgOpts.optionalIgnoreButtonLabel
+                        });
+                        if (confirmResult.value === true) {
+                            CodePushUtil.logMessage("User accepted the update.");
+                            return true; /* Should update */
+                        }
+                        else {
+                            /* Cancel */
+                            CodePushUtil.logMessage("User cancelled the update.");
+                            syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
+                            return false; /* Should not update, the user declined the update */
+                        }
+                    }
+                }
+                else {
+                    /* No user interaction */
+                    return true; /* Should update */
+                }
+            });
             const onUpdate = (remotePackage) => __awaiter$5(this, void 0, void 0, function* () {
                 if (remotePackage === null) {
                     /* Then the app is up to date */
@@ -1538,47 +1596,15 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                         syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
                     }
                     else {
-                        if (syncOptions.updateDialog) {
-                            CodePushUtil.logMessage("Awaiting user action.");
-                            syncCallback && syncCallback(null, SyncStatus.AWAITING_USER_ACTION);
-                            const dlgOpts = syncOptions.updateDialog;
-                            if (remotePackage.isMandatory) {
-                                /* Alert user */
-                                const message = dlgOpts.appendReleaseDescription ?
-                                    dlgOpts.mandatoryUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description :
-                                    dlgOpts.mandatoryUpdateMessage;
-                                yield dialog.Dialog.alert({
-                                    message,
-                                    title: dlgOpts.updateTitle,
-                                    buttonTitle: dlgOpts.mandatoryContinueButtonLabel
-                                });
-                                downloadAndInstallUpdate(remotePackage);
-                            }
-                            else {
-                                /* Confirm update with user */
-                                const message = dlgOpts.appendReleaseDescription ?
-                                    dlgOpts.optionalUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description
-                                    : dlgOpts.optionalUpdateMessage;
-                                const confirmResult = yield dialog.Dialog.confirm({
-                                    message,
-                                    title: dlgOpts.updateTitle,
-                                    okButtonTitle: dlgOpts.optionalInstallButtonLabel,
-                                    cancelButtonTitle: dlgOpts.optionalIgnoreButtonLabel
-                                });
-                                if (confirmResult.value === true) {
-                                    /* Install */
-                                    downloadAndInstallUpdate(remotePackage);
-                                }
-                                else {
-                                    /* Cancel */
-                                    CodePushUtil.logMessage("User cancelled the update.");
-                                    syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
-                                }
-                            }
-                        }
-                        else {
-                            /* No user interaction */
-                            downloadAndInstallUpdate(remotePackage);
+                        /* Check if user input is required.
+                         * if it's the case, get user input */
+                        const lShouldUpdate = yield manageUserInput(remotePackage);
+                        if (lShouldUpdate) {
+                            /* Download */
+                            const localPackage = yield downloadUpdate(remotePackage);
+                            /* Install */
+                            const installMode = yield installUpdate(localPackage);
+                            onInstallSuccess(installMode);
                         }
                     }
                 }

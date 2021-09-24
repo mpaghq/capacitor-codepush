@@ -392,6 +392,26 @@ class CodePush implements CodePushCapacitorPlugin {
       syncCallback && syncCallback(error, SyncStatus.ERROR);
     };
 
+    const installUpdate = async (localPackage: ILocalPackage): Promise<InstallMode> => {
+      try {
+        syncCallback && syncCallback(null, SyncStatus.INSTALLING_UPDATE);
+        return await localPackage.install(syncOptions);
+      } catch (error) {
+        CodePushUtil.logError("Failed to install the local package", error);
+        onError(error);
+      }
+    };
+
+    const downloadUpdate = async (remotePackage: RemotePackage): Promise<ILocalPackage> => {
+      try {
+        syncCallback && syncCallback(null, SyncStatus.DOWNLOADING_PACKAGE);
+        return await remotePackage.download(downloadProgress);
+      } catch (error) {
+        CodePushUtil.logError("Failed to download the remote package", error);
+        onError(error);
+      }
+    };
+
     const onInstallSuccess = (appliedWhen: InstallMode) => {
       switch (appliedWhen) {
         case InstallMode.ON_NEXT_RESTART:
@@ -411,14 +431,56 @@ class CodePush implements CodePushCapacitorPlugin {
       syncCallback && syncCallback(null, SyncStatus.UPDATE_INSTALLED);
     };
 
-    const onDownloadSuccess = (localPackage: ILocalPackage) => {
-      syncCallback && syncCallback(null, SyncStatus.INSTALLING_UPDATE);
-      localPackage.install(syncOptions).then(onInstallSuccess, onError);
-    };
+    const manageUserInput = async (remotePackage: RemotePackage): Promise<boolean> => {
+      if (syncOptions.updateDialog) {
+        CodePushUtil.logMessage("Awaiting user action.");
+        syncCallback && syncCallback(null, SyncStatus.AWAITING_USER_ACTION);
 
-    const downloadAndInstallUpdate = (remotePackage: RemotePackage) => {
-      syncCallback && syncCallback(null, SyncStatus.DOWNLOADING_PACKAGE);
-      remotePackage.download(downloadProgress).then(onDownloadSuccess, onError);
+        const dlgOpts: UpdateDialogOptions = <UpdateDialogOptions>syncOptions.updateDialog;
+
+        if (remotePackage.isMandatory) {
+          /* Alert user */
+          const message = dlgOpts.appendReleaseDescription ?
+            dlgOpts.mandatoryUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description :
+            dlgOpts.mandatoryUpdateMessage;
+
+          await Dialog.alert(
+            {
+              message,
+              title: dlgOpts.updateTitle,
+              buttonTitle: dlgOpts.mandatoryContinueButtonLabel
+            }
+          );
+          CodePushUtil.logMessage("User dismissed the mandatory update dialog.");
+
+          return true; /* Should update */
+        } else {
+          /* Confirm update with user */
+          const message = dlgOpts.appendReleaseDescription ?
+            dlgOpts.optionalUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description
+            : dlgOpts.optionalUpdateMessage;
+
+          const confirmResult: ConfirmResult = await Dialog.confirm({
+            message,
+            title: dlgOpts.updateTitle,
+            okButtonTitle: dlgOpts.optionalInstallButtonLabel,
+            cancelButtonTitle: dlgOpts.optionalIgnoreButtonLabel
+          });
+
+          if (confirmResult.value === true) {
+            CodePushUtil.logMessage("User accepted the update.");
+            return true; /* Should update */
+          } else {
+            /* Cancel */
+            CodePushUtil.logMessage("User cancelled the update.");
+            syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
+            return false; /* Should not update, the user declined the update */
+          }
+        }
+      } else {
+        /* No user interaction */
+        return true; /* Should update */
+      }
     };
 
     const onUpdate = async (remotePackage: RemotePackage) => {
@@ -430,50 +492,16 @@ class CodePush implements CodePushCapacitorPlugin {
           CodePushUtil.logMessage("An update is available, but it is being ignored due to have been previously rolled back.");
           syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
         } else {
-          if (syncOptions.updateDialog) {
-            CodePushUtil.logMessage("Awaiting user action.");
-            syncCallback && syncCallback(null, SyncStatus.AWAITING_USER_ACTION);
+          /* Check if user input is required.
+           * if it's the case, get user input */
+          const lShouldUpdate: boolean = await manageUserInput(remotePackage);
 
-            const dlgOpts: UpdateDialogOptions = <UpdateDialogOptions>syncOptions.updateDialog;
-
-            if (remotePackage.isMandatory) {
-              /* Alert user */
-              const message = dlgOpts.appendReleaseDescription ?
-                dlgOpts.mandatoryUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description :
-                dlgOpts.mandatoryUpdateMessage;
-              await Dialog.alert(
-                {
-                  message,
-                  title: dlgOpts.updateTitle,
-                  buttonTitle: dlgOpts.mandatoryContinueButtonLabel
-                }
-              );
-              downloadAndInstallUpdate(remotePackage);
-            } else {
-              /* Confirm update with user */
-              const message = dlgOpts.appendReleaseDescription ?
-                dlgOpts.optionalUpdateMessage + dlgOpts.descriptionPrefix + remotePackage.description
-                : dlgOpts.optionalUpdateMessage;
-
-              const confirmResult: ConfirmResult = await Dialog.confirm({
-                message,
-                title: dlgOpts.updateTitle,
-                okButtonTitle: dlgOpts.optionalInstallButtonLabel,
-                cancelButtonTitle: dlgOpts.optionalIgnoreButtonLabel
-              });
-
-              if (confirmResult.value === true) {
-                /* Install */
-                downloadAndInstallUpdate(remotePackage);
-              } else {
-                /* Cancel */
-                CodePushUtil.logMessage("User cancelled the update.");
-                syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
-              }
-            }
-          } else {
-            /* No user interaction */
-            downloadAndInstallUpdate(remotePackage);
+          if (lShouldUpdate) {
+            /* Download */
+            const localPackage = await downloadUpdate(remotePackage);
+            /* Install */
+            const installMode = await installUpdate(localPackage);
+            onInstallSuccess(installMode);
           }
         }
       }
