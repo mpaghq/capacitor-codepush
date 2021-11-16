@@ -164,7 +164,7 @@ appcenter codepush release -a <ownerName>/MyApp-android -c android/app/src/main/
 appcenter codepush release -a <ownerName>/MyApp-ios -c ios/App/App/public/ -x
 
 # Release an update signed by private key (public key should be configured for application)
-appcenter codepush release -a <ownerName>/MyApp-android -c android/app/src/main/assets/public/ --privateKeyPath ~/rsa/private_key.pem
+appcenter codepush release -a <ownerName>/MyApp-android -c android/app/src/main/assets/public/ --private-key-path ~/rsa/private_key.pem
 ```
 
 *NOTE : The path you are to provide to the `-c` flag might vary depending on the platform or the framework. For example, with an Ionic Capacitor project :
