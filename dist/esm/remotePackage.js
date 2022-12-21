@@ -51,13 +51,19 @@ export class RemotePackage extends Package {
                 if (yield FileUtil.fileExists(Directory.Data, file)) {
                     yield Filesystem.deleteFile({ directory: Directory.Data, path: file });
                 }
+                yield Http.addListener("progress", (data) => {
+                    console.log("progress", data);
+                    downloadProgress({ receivedBytes: data.bytes, totalBytes: data.contentLength });
+                });
                 yield Http.downloadFile({
                     url: this.downloadUrl,
                     method: "GET",
                     filePath: file,
                     fileDirectory: Directory.Data,
-                    responseType: "blob"
+                    responseType: "blob",
+                    progress: true
                 });
+                yield Http.removeAllListeners();
             }
             catch (e) {
                 CodePushUtil.throwError(new Error("An error occured while downloading the package. " + (e && e.message) ? e.message : ""));
