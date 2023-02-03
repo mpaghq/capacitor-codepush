@@ -7,6 +7,7 @@ import { Sdk } from "./sdk";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { FileUtil } from "./fileUtil";
 import { Http } from "@capacitor-community/http";
+import {PluginListenerHandle} from "@capacitor/core";
 
 /**
  * Defines a remote package, which represents an update package available for download.
@@ -52,9 +53,12 @@ export class RemotePackage extends Package implements IRemotePackage {
         await Filesystem.deleteFile({ directory: Directory.Data, path: file });
       }
 
-      await Http.addListener("progress", (data) => {
-        downloadProgress({receivedBytes: data.bytes, totalBytes: data.contentLength});
-      });
+      let downloadListener: PluginListenerHandle
+      if (downloadProgress) {
+        downloadListener = await Http.addListener("progress", (data) => {
+          downloadProgress({receivedBytes: data.bytes, totalBytes: data.contentLength});
+        });
+      }
 
       await Http.downloadFile({
         url: this.downloadUrl,
@@ -65,7 +69,9 @@ export class RemotePackage extends Package implements IRemotePackage {
         progress: true
       });
 
-      await Http.removeAllListeners();
+      if (downloadListener) {
+        await downloadListener.remove();
+      }
     } catch (e) {
       CodePushUtil.throwError(new Error("An error occured while downloading the package. " + (e && e.message) ? e.message : ""));
     } finally {

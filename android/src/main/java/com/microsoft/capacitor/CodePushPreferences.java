@@ -2,6 +2,7 @@ package com.microsoft.capacitor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import org.json.JSONException;
 
@@ -30,7 +31,7 @@ public class CodePushPreferences {
     private static final String LAST_VERSION_DEPLOYMENT_KEY_KEY = "LAST_VERSION_DEPLOYMENT_KEY_KEY";
     private static final String LAST_VERSION_LABEL_OR_APP_VERSION_KEY = "LAST_VERSION_LABEL_OR_APP_VERSION_KEY";
 
-    private Context context;
+    private final Context context;
 
     public CodePushPreferences(Context context) {
         this.context = context;
@@ -45,7 +46,7 @@ public class CodePushPreferences {
         SharedPreferences preferences = context.getSharedPreferences(CodePushPreferences.BINARY_HASH_PREFERENCE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(CodePushPreferences.BINARY_HASH_PREFERENCE_KEY, binaryHash);
-        editor.commit();
+        editor.apply();
     }
 
     public void saveFailedUpdate(String hashCode) {
@@ -58,7 +59,7 @@ public class CodePushPreferences {
         failedUpdatesSet.add(hashCode);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putStringSet(CodePushPreferences.FAILED_UPDATES_KEY, failedUpdatesSet);
-        editor.commit();
+        editor.apply();
     }
 
     public boolean isFailedUpdate(String hashCode) {
@@ -80,7 +81,7 @@ public class CodePushPreferences {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(CodePushPreferences.INSTALL_MODE_KEY, installOptions.installMode.getValue());
         editor.putInt(CodePushPreferences.INSTALL_MIN_BACKGROUND_DURATION, installOptions.minimumBackgroundDuration);
-        editor.commit();
+        editor.apply();
     }
 
     public void clearPendingInstall() {
@@ -105,7 +106,7 @@ public class CodePushPreferences {
         SharedPreferences preferences = context.getSharedPreferences(CodePushPreferences.INSTALL_NEEDS_CONFIRMATION, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(CodePushPreferences.INSTALL_NEEDS_CONFIRMATION_KEY, true);
-        editor.commit();
+        editor.apply();
     }
 
     public void clearInstallNeedsConfirmation() {
@@ -114,35 +115,33 @@ public class CodePushPreferences {
 
     public boolean installNeedsConfirmation() {
         SharedPreferences preferences = context.getSharedPreferences(CodePushPreferences.INSTALL_NEEDS_CONFIRMATION, Context.MODE_PRIVATE);
-        boolean notConfirmedInstall = preferences.getBoolean(CodePushPreferences.INSTALL_NEEDS_CONFIRMATION_KEY, false);
-        return notConfirmedInstall;
+        return preferences.getBoolean(CodePushPreferences.INSTALL_NEEDS_CONFIRMATION_KEY, false);
     }
 
     public void clearBinaryFirstRunFlag() {
         SharedPreferences preferences = context.getSharedPreferences(CodePushPreferences.FIRST_RUN_PREFERENCE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.remove(CodePushPreferences.FIRST_RUN_PREFERENCE_KEY);
-        editor.commit();
+        editor.apply();
     }
 
     public void saveBinaryFirstRunFlag() {
         SharedPreferences preferences = context.getSharedPreferences(CodePushPreferences.FIRST_RUN_PREFERENCE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(CodePushPreferences.FIRST_RUN_PREFERENCE_KEY, false);
-        editor.commit();
+        editor.apply();
     }
 
     public boolean isBinaryFirstRun() {
         SharedPreferences preferences = context.getSharedPreferences(CodePushPreferences.FIRST_RUN_PREFERENCE, Context.MODE_PRIVATE);
-        boolean isFirstRun = preferences.getBoolean(CodePushPreferences.FIRST_RUN_PREFERENCE_KEY, true);
-        return isFirstRun;
+        return preferences.getBoolean(CodePushPreferences.FIRST_RUN_PREFERENCE_KEY, true);
     }
 
     public void clearPreferences(String preferencesId) {
         SharedPreferences preferences = context.getSharedPreferences(preferencesId, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
-        editor.commit();
+        editor.apply();
     }
 
     public void clearFailedReport() {
@@ -165,7 +164,7 @@ public class CodePushPreferences {
         SharedPreferences preferences = context.getSharedPreferences(CodePushPreferences.FAILED_STATUS_REPORT_PREFERENCE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(CodePushPreferences.FAILED_STATUS_REPORT_PREFERENCE_KEY, statusReport.serialize());
-        editor.commit();
+        editor.apply();
     }
 
     public void saveLastVersion(String labelOrAppVersion, String deploymentKey) {
@@ -173,7 +172,7 @@ public class CodePushPreferences {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(CodePushPreferences.LAST_VERSION_LABEL_OR_APP_VERSION_KEY, labelOrAppVersion);
         editor.putString(CodePushPreferences.LAST_VERSION_DEPLOYMENT_KEY_KEY, deploymentKey);
-        editor.commit();
+        editor.apply();
     }
 
     public String getLastVersionDeploymentKey() {
