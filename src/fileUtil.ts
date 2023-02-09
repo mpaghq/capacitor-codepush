@@ -73,8 +73,8 @@ export class FileUtil {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 if (ignoreList.includes(file)) continue;
-                const sourcePath = sourceDir.path + "/" + file;
-                const destPath = destinationDir.path + "/" + file;
+                const sourcePath = sourceDir.path + "/" + file.name;
+                const destPath = destinationDir.path + "/" + file.name;
                 const source = { ...sourceDir, path: sourcePath };
                 const destination = { ...destinationDir, path: destPath };
                 if (await FileUtil.directoryExists(source.directory, source.path)) { // is directory
