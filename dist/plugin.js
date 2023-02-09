@@ -1191,7 +1191,7 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
      *       Also, don't forget to change the TestMessage module in ServerUtils!
      *       AND THE codePush.d.ts (typings) file!!!
      */
-    var SyncStatus;
+    exports.SyncStatus = void 0;
     (function (SyncStatus) {
         /**
          * Result status - the application is up to date.
@@ -1231,7 +1231,7 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
          * Intermediate status - the update package is about to be installed.
          */
         SyncStatus[SyncStatus["INSTALLING_UPDATE"] = 8] = "INSTALLING_UPDATE";
-    })(SyncStatus || (SyncStatus = {}));
+    })(exports.SyncStatus || (exports.SyncStatus = {}));
 
     var __awaiter$5 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1455,7 +1455,7 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                     if (CodePush$1.SyncInProgress) {
                         /* A sync is already in progress */
                         CodePushUtil.logMessage("Sync already in progress.");
-                        resolve(SyncStatus.IN_PROGRESS);
+                        resolve(exports.SyncStatus.IN_PROGRESS);
                     }
                     /* Create a callback that resets the SyncInProgress flag when the sync is complete
                     * If the sync status is a result status, then the sync must be complete and the flag must be updated
@@ -1472,10 +1472,10 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                             syncOptions.onSyncStatusChanged && syncOptions.onSyncStatusChanged(result);
                             /* Check if the sync operation is over */
                             switch (result) {
-                                case SyncStatus.ERROR:
-                                case SyncStatus.UP_TO_DATE:
-                                case SyncStatus.UPDATE_IGNORED:
-                                case SyncStatus.UPDATE_INSTALLED:
+                                case exports.SyncStatus.ERROR:
+                                case exports.SyncStatus.UP_TO_DATE:
+                                case exports.SyncStatus.UPDATE_IGNORED:
+                                case exports.SyncStatus.UPDATE_INSTALLED:
                                     /* The sync has completed */
                                     CodePush$1.SyncInProgress = false;
                                     resolve(result);
@@ -1527,7 +1527,7 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
             this.notifyApplicationReady();
             const onError = (error) => {
                 CodePushUtil.logError("An error occurred during sync.", error);
-                syncCallback && syncCallback(error, SyncStatus.ERROR);
+                syncCallback && syncCallback(error, exports.SyncStatus.ERROR);
             };
             const onInstallSuccess = (appliedWhen) => {
                 switch (appliedWhen) {
@@ -1543,30 +1543,30 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                         }
                         break;
                 }
-                syncCallback && syncCallback(null, SyncStatus.UPDATE_INSTALLED);
+                syncCallback && syncCallback(null, exports.SyncStatus.UPDATE_INSTALLED);
             };
             const onDownloadSuccess = (localPackage) => {
-                syncCallback && syncCallback(null, SyncStatus.INSTALLING_UPDATE);
+                syncCallback && syncCallback(null, exports.SyncStatus.INSTALLING_UPDATE);
                 localPackage.install(syncOptions).then(onInstallSuccess, onError);
             };
             const downloadAndInstallUpdate = (remotePackage) => {
-                syncCallback && syncCallback(null, SyncStatus.DOWNLOADING_PACKAGE);
+                syncCallback && syncCallback(null, exports.SyncStatus.DOWNLOADING_PACKAGE);
                 remotePackage.download(downloadProgress).then(onDownloadSuccess, onError);
             };
             const onUpdate = (remotePackage) => __awaiter$5(this, void 0, void 0, function* () {
                 if (remotePackage === null) {
                     /* Then the app is up to date */
-                    syncCallback && syncCallback(null, SyncStatus.UP_TO_DATE);
+                    syncCallback && syncCallback(null, exports.SyncStatus.UP_TO_DATE);
                 }
                 else {
                     if (remotePackage.failedInstall && syncOptions.ignoreFailedUpdates) {
                         CodePushUtil.logMessage("An update is available, but it is being ignored due to have been previously rolled back.");
-                        syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
+                        syncCallback && syncCallback(null, exports.SyncStatus.UPDATE_IGNORED);
                     }
                     else {
                         if (syncOptions.updateDialog) {
                             CodePushUtil.logMessage("Awaiting user action.");
-                            syncCallback && syncCallback(null, SyncStatus.AWAITING_USER_ACTION);
+                            syncCallback && syncCallback(null, exports.SyncStatus.AWAITING_USER_ACTION);
                             const dlgOpts = syncOptions.updateDialog;
                             if (remotePackage.isMandatory) {
                                 /* Alert user */
@@ -1598,7 +1598,7 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                                 else {
                                     /* Cancel */
                                     CodePushUtil.logMessage("User cancelled the update.");
-                                    syncCallback && syncCallback(null, SyncStatus.UPDATE_IGNORED);
+                                    syncCallback && syncCallback(null, exports.SyncStatus.UPDATE_IGNORED);
                                 }
                             }
                         }
@@ -1609,7 +1609,7 @@ var capacitorPlugin = (function (exports, acquisitionSdk, filesystem, core, http
                     }
                 }
             });
-            syncCallback && syncCallback(null, SyncStatus.CHECKING_FOR_UPDATE);
+            syncCallback && syncCallback(null, exports.SyncStatus.CHECKING_FOR_UPDATE);
             this.checkForUpdate(onUpdate, onError, syncOptions.deploymentKey);
         }
         /**
