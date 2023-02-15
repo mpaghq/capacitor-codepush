@@ -29,7 +29,7 @@
   "author": "MAPIACOMPANY",
   "license": "MIT",
   "devDependencies": {
-    "@capacitor-community/http": "^1.0.0",
+    "@capacitor-community/http": "^2.0.0-0",
     "@capacitor/cli": "^3.0.0",
     "@capacitor/device": "^1.0.0",
     "@capacitor/dialog": "^1.0.0",
@@ -69,7 +69,7 @@
     "code-push": "^4.0.2"
   },
   "peerDependencies": {
-    "@capacitor-community/http": "^2.0.0",
+    "@capacitor-community/http": "^2.0.0-0",
     "@capacitor/core": "^3.0.0",
     "@capacitor/device": "^1.0.0",
     "@capacitor/dialog": "^1.0.0",
