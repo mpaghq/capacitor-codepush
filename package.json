@@ -15,8 +15,7 @@
     "swiftlint": "node-swiftlint",
     "build": "npm run clean && tsc && rollup -c rollup.config.js",
     "clean": "rimraf ./dist",
-    "watch": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "watch": "tsc --watch"
   },
   "keywords": [
     "capacitor",
