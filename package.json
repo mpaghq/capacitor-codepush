@@ -30,7 +30,7 @@
   "license": "MIT",
   "devDependencies": {
     "@capacitor-community/http": "^2.0.0-0",
-    "@capacitor/cli": "^3.0.0",
+    "@capacitor/cli": "^5.0.0",
     "@capacitor/device": "^1.0.0",
     "@capacitor/dialog": "^1.0.0",
     "@capacitor/filesystem": "^1.0.0",
@@ -70,7 +70,7 @@
   },
   "peerDependencies": {
     "@capacitor-community/http": "^2.0.0-0",
-    "@capacitor/core": "^4.0.0",
+    "@capacitor/core": "^5.0.0",
     "@capacitor/device": "^4.1.0",
     "@capacitor/dialog": "^4.1.0",
     "@capacitor/filesystem": "^4.1.0"
