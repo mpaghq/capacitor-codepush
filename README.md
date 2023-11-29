@@ -46,7 +46,7 @@ Once you've followed the general-purpose ["getting started"](https://docs.micros
 
 ```shell
 npm i @capacitor-community/http@next @capacitor/device @capacitor/dialog @capacitor/filesystem -D
-npm i https://github.com/mapiacompany/capacitor-codepush -D
+npm i https://github.com/salohcin714/capacitor-codepush -D
 npx cap sync
 ```
 

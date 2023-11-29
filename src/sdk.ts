@@ -64,7 +64,7 @@ export class Sdk {
                 serverUrl,
                 ignoreAppVersion: false,
                 appVersion,
-                clientUniqueId: device.uuid
+                clientUniqueId: device.identifier
             };
 
             if (deploymentKey) {
