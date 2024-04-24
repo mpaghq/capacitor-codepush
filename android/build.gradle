@@ -17,6 +17,7 @@ buildscript {
 apply plugin: 'com.android.library'
 
 android {
+    namespace "com.microsoft.capacitor.codepush"
     compileSdkVersion project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 30
     defaultConfig {
         minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 24
@@ -49,7 +50,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
-    implementation 'com.nimbusds:nimbus-jose-jwt:5.1'
+    implementation('com.nimbusds:nimbus-jose-jwt:5.1') { exclude group: "net.minidev", module: "json-smart" }
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

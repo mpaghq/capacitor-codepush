@@ -1,7 +1,6 @@
 import { Http } from "code-push/script/acquisition-sdk";
 import type { Callback } from "./callbackUtil";
-import type { HttpResponse, HttpOptions } from "@capacitor-community/http";
-import { Http as NativeHttp } from "@capacitor-community/http";
+import { CapacitorHttp, HttpResponse, HttpOptions } from "@capacitor/core";
 
 
 /**
@@ -15,8 +14,8 @@ export class HttpRequester implements Http.Requester {
     }
 
     public request(verb: Http.Verb, url: string, callbackOrRequestBody: Callback<Http.Response> | string, callback?: Callback<Http.Response>): void {
-        var requestBody: any;
-        var requestCallback: Callback<Http.Response> = callback!;
+        let requestBody: any;
+        let requestCallback: Callback<Http.Response> = callback!;
 
         // request(verb, url, callback)
         if (!requestCallback && typeof callbackOrRequestBody === "function") {
@@ -35,8 +34,7 @@ export class HttpRequester implements Http.Requester {
                 // do nothing
             }
         }
-
-        var methodName = this.getHttpMethodName(verb);
+        const methodName = this.getHttpMethodName(verb);
         if (methodName === null) {
             return requestCallback(new Error("Method Not Allowed"), null);
         }
@@ -59,10 +57,12 @@ export class HttpRequester implements Http.Requester {
         } else {
             options.data = requestBody;
         }
-        NativeHttp.request(options).then((nativeRes: HttpResponse) => {
+        CapacitorHttp.request(options).then((nativeRes: HttpResponse) => {
             if (typeof nativeRes.data === "object") nativeRes.data = JSON.stringify(nativeRes.data);
-            var response: Http.Response = { statusCode: nativeRes.status, body: nativeRes.data };
+            const response: Http.Response = {statusCode: nativeRes.status, body: nativeRes.data};
             requestCallback && requestCallback(null, response);
+        }).catch(e => {
+            console.log(e);
         });
     }
 

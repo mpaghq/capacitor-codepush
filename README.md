@@ -4,6 +4,9 @@
 
 # Capacitor Plugin for CodePush
 
+## Capacitor v6 Support [v2.0.1]
+## If you want Capacitor v5 plugin, install [v1.0.4]
+
 This plugin provides client-side integration for the [CodePush service](https://microsoft.github.io/code-push/), allowing you to easily add a dynamic update experience to your Capacitor app(s).
 
 <!-- Capacitor Catalog -->
@@ -31,11 +34,10 @@ In order to ensure that your end users always have a functioning version of your
 
 Tested with these environment
 ```
-"@capacitor-community/http": "^1.0.0",
-"@capacitor/core": "^3.0.0",
-"@capacitor/device": "^1.0.0",
-"@capacitor/dialog": "^1.0.0",
-"@capacitor/filesystem": "^1.0.0"
+"@capacitor/core": "^5.0.3",
+"@capacitor/device": "^5.0.2",
+"@capacitor/dialog": "^5.0.2",
+"@capacitor/filesystem": "^5.0.2"
 ```
 
 This Capacitor plugin does not work with Capacitor v2 or older versions.
@@ -45,8 +47,8 @@ This Capacitor plugin does not work with Capacitor v2 or older versions.
 Once you've followed the general-purpose ["getting started"](https://docs.microsoft.com/en-us/appcenter/distribution/codepush/) instructions for setting up your CodePush account, you can start CodePush-ifying your Capacitor app by running the following command from within your app's root directory:
 
 ```shell
-npm i @capacitor-community/http@next @capacitor/device @capacitor/dialog @capacitor/filesystem -D
-npm i https://github.com/mapiacompany/capacitor-codepush -D
+npm i @capacitor/device @capacitor/dialog @capacitor/filesystem -D
+npm i @nerdfrenzs/capacitor-codepush -D
 npx cap sync
 ```
 
@@ -99,7 +101,7 @@ With the Capacitor plugin installed and configured, the only thing left is to ad
 The simplest way to do this is to perform the following in your app's `deviceready` event handler:
 
 ```javascript
-import { codePush } from 'capacitor-codepush';
+import { codePush } from '@nerdfrenzs/capacitor-codepush';
 codePush.sync();
 ```
 
@@ -108,7 +110,7 @@ If an update is available, it will be silently downloaded, and installed the nex
 If you would like your app to discover updates more quickly, you can also choose to call `sync` every time the app resumes from the background, by adding the following code (or something equivalent) as part of your app's startup behavior. You can call `sync` as frequently as you would like, so when and where you call it just depends on your personal preference.
 
 ```javascript
-import { codePush } from 'capacitor-codepush';
+import { codePush } from '@nerdfrenzs/capacitor-codepush';
 import { Plugins, AppState } from '@capacitor/core';
 
 const { App } = Plugins;

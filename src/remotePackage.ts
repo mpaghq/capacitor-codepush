@@ -6,7 +6,6 @@ import { DownloadProgress, ILocalPackage, IRemotePackage, Package } from "./pack
 import { Sdk } from "./sdk";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { FileUtil } from "./fileUtil";
-import { Http } from "@capacitor-community/http";
 
 /**
  * Defines a remote package, which represents an update package available for download.
@@ -35,7 +34,7 @@ export class RemotePackage extends Package implements IRemotePackage {
     this.isDownloading = true;
 
     const file = LocalPackage.DownloadDir + "/" + LocalPackage.PackageUpdateFileName;
-    const fullPath = await FileUtil.getUri(Directory.Data, file);
+    let fullPath = await FileUtil.getUri(Directory.Data, file);
 
     try {
       // create directory if not exists
@@ -51,13 +50,26 @@ export class RemotePackage extends Package implements IRemotePackage {
       if (await FileUtil.fileExists(Directory.Data, file)) {
         await Filesystem.deleteFile({ directory: Directory.Data, path: file });
       }
+      let progress = false;
+      let listener = undefined;
+      if (typeof downloadProgress === "function") {
+        progress = true;
+        listener = await Filesystem.addListener("progress", (e) => {
+          return downloadProgress({totalBytes: e.contentLength, receivedBytes: e.bytes} );
+        });
+      }
 
-      await Http.downloadFile({
+      await Filesystem.downloadFile({
         url: this.downloadUrl,
         method: "GET",
-        filePath: file,
-        fileDirectory: Directory.Data,
-        responseType: "blob"
+        path: file,
+        directory: Directory.Data,
+        responseType: "blob",
+        progress: progress,
+      }).then((result) => {
+        if (listener) listener.remove();
+      }).catch(e => {
+        throw e;
       });
     } catch (e) {
       CodePushUtil.throwError(new Error("An error occured while downloading the package. " + (e && e.message) ? e.message : ""));
@@ -76,9 +88,8 @@ export class RemotePackage extends Package implements IRemotePackage {
     localPackage.isFirstRun = false;
     localPackage.failedInstall = installFailed;
     localPackage.localPath = fullPath;
-
     CodePushUtil.logMessage("Package download success: " + JSON.stringify(localPackage));
-    Sdk.reportStatusDownload(localPackage, localPackage.deploymentKey);
+    await Sdk.reportStatusDownload(localPackage, localPackage.deploymentKey);
 
     return localPackage;
   }
